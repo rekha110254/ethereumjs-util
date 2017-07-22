@@ -5,31 +5,23 @@ const rlp = require('rlp')
 const BN = require('bn.js')
 const createHash = require('create-hash')
 var Buffer = require('buffer').Buffer
-
 /**
  * the max integer that this VM can handle (a ```BN```)
  * @var {BN} MAX_INTEGER
  */
-exports.MAX_INTEGER = new BN(
-  'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff',
-  16
-)
+exports.MAX_INTEGER = new BN('ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff', 16)
 
 /**
  * 2^256 (a ```BN```)
  * @var {BN} TWO_POW256
  */
-exports.TWO_POW256 = new BN(
-  '10000000000000000000000000000000000000000000000000000000000000000',
-  16
-)
+exports.TWO_POW256 = new BN('10000000000000000000000000000000000000000000000000000000000000000', 16)
 
 /**
  * SHA3-256 hash of null (a ```String```)
  * @var {String} SHA3_NULL_S
  */
-exports.SHA3_NULL_S =
-  'c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470'
+exports.SHA3_NULL_S = 'c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470'
 
 /**
  * SHA3-256 hash of null (a ```Buffer```)
@@ -41,8 +33,7 @@ exports.SHA3_NULL = new Buffer(exports.SHA3_NULL_S, 'hex')
  * SHA3-256 of an RLP of an empty array (a ```String```)
  * @var {String} SHA3_RLP_ARRAY_S
  */
-exports.SHA3_RLP_ARRAY_S =
-  '1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347'
+exports.SHA3_RLP_ARRAY_S = '1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347'
 
 /**
  * SHA3-256 of an RLP of an empty array (a ```Buffer```)
@@ -54,8 +45,7 @@ exports.SHA3_RLP_ARRAY = new Buffer(exports.SHA3_RLP_ARRAY_S, 'hex')
  * SHA3-256 hash of the RLP of null  (a ```String```)
  * @var {String} SHA3_RLP_S
  */
-exports.SHA3_RLP_S =
-  '56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421'
+exports.SHA3_RLP_S = '56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421'
 
 /**
  * SHA3-256 hash of the RLP of null (a ```Buffer```)
@@ -326,9 +316,7 @@ exports.isValidPrivate = function (privateKey) {
 exports.isValidPublic = function (publicKey, sanitize) {
   if (publicKey.length === 64) {
     // Convert to SEC1 for secp256k1
-    return secp256k1.publicKeyVerify(
-      Buffer.concat([new Buffer([4]), publicKey])
-    )
+    return secp256k1.publicKeyVerify(Buffer.concat([ new Buffer([4]), publicKey ]))
   }
 
   if (!sanitize) {
@@ -348,7 +336,7 @@ exports.isValidPublic = function (publicKey, sanitize) {
  */
 exports.pubToAddress = exports.publicToAddress = function (pubKey, sanitize) {
   pubKey = exports.toBuffer(pubKey)
-  if (sanitize && pubKey.length !== 64) {
+  if (sanitize && (pubKey.length !== 64)) {
     pubKey = secp256k1.publicKeyConvert(pubKey, false).slice(1)
   }
   assert(pubKey.length === 64)
@@ -362,11 +350,11 @@ exports.pubToAddress = exports.publicToAddress = function (pubKey, sanitize) {
  * @param {Buffer} privateKey A private key must be 256 bits wide
  * @return {Buffer}
  */
-var privateToPublic = (exports.privateToPublic = function (privateKey) {
+var privateToPublic = exports.privateToPublic = function (privateKey) {
   privateKey = exports.toBuffer(privateKey)
   // skip the type flag and use the X, Y points
   return secp256k1.publicKeyCreate(privateKey, false).slice(1)
-})
+}
 
 /**
  * Converts a public key to the Ethereum format.
@@ -409,10 +397,7 @@ exports.ecsign = function (msgHash, privateKey) {
  * @return {Buffer} publicKey
  */
 exports.ecrecover = function (msgHash, v, r, s) {
-  var signature = Buffer.concat(
-    [exports.setLength(r, 32), exports.setLength(s, 32)],
-    64
-  )
+  var signature = Buffer.concat([exports.setLength(r, 32), exports.setLength(s, 32)], 64)
   var recovery = exports.bufferToInt(v) - 27
   if (recovery !== 0 && recovery !== 1) {
     throw new Error('Invalid signature v value')
@@ -432,7 +417,7 @@ exports.ecrecover = function (msgHash, v, r, s) {
 exports.toRpcSig = function (v, r, s) {
   // geth (and the RPC eth_sign method) uses the 65 byte format used by Bitcoin
   // FIXME: this might change in the future - https://github.com/ethereum/go-ethereum/issues/2053
-  return exports.bufferToHex(Buffer.concat([r, s, exports.toBuffer(v - 27)]))
+  return exports.bufferToHex(Buffer.concat([ r, s, exports.toBuffer(v - 27) ]))
 }
 
 /**
@@ -506,10 +491,7 @@ exports.toChecksumAddress = function (address) {
  * @return {Boolean}
  */
 exports.isValidChecksumAddress = function (address) {
-  return (
-    exports.isValidAddress(address) &&
-    exports.toChecksumAddress(address) === address
-  )
+  return exports.isValidAddress(address) && (exports.toChecksumAddress(address) === address)
 }
 
 /**
@@ -657,22 +639,9 @@ exports.defineProperties = function (self, fields, data) {
 
       if (field.allowLess && field.length) {
         v = exports.stripZeros(v)
-        assert(
-          field.length >= v.length,
-          'The field ' +
-            field.name +
-            ' must not have more ' +
-            field.length +
-            ' bytes'
-        )
+        assert(field.length >= v.length, 'The field ' + field.name + ' must not have more ' + field.length + ' bytes')
       } else if (!(field.allowZero && v.length === 0) && field.length) {
-        assert(
-          field.length === v.length,
-          'The field ' +
-            field.name +
-            ' must have byte length of ' +
-            field.length
-        )
+        assert(field.length === v.length, 'The field ' + field.name + ' must have byte length of ' + field.length)
       }
 
       self.raw[i] = v
@@ -712,7 +681,7 @@ exports.defineProperties = function (self, fields, data) {
 
     if (Array.isArray(data)) {
       if (data.length > self._fields.length) {
-        throw new Error('wrong number of fields in data')
+        throw (new Error('wrong number of fields in data'))
       }
 
       // make sure all the items are buffers
